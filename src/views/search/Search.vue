@@ -166,8 +166,8 @@
                   <th class="text-left">Writer</th>
                   <th class="text-left">Genre</th>
                   <th class="text-left">Key words</th>
-                  <th class="text-left">Highlights</th>
-                  <th class="text-left">Download</th>
+                  <th class="text-left"></th>
+                  <th class="text-left"></th>
                 </tr>
               </thead>
               <tbody>
@@ -176,7 +176,56 @@
                   <td>{{ book.writer }}</td>
                   <td>{{ book.genres }}</td>
                   <td>{{ book.keywords }}</td>
-                  <td></td>
+                  <td><v-btn
+                    class="mr-4"
+                    @click="findAvailableRevievers(book.writer)"
+                    outlined
+                     >
+                    Available reviewers
+                </v-btn></td>
+                  <td><v-btn
+                    class="mr-4"
+                    @click="download(book.location)"
+                    outlined
+                     >
+                    Download
+                </v-btn></td>
+                </tr>
+              </tbody>
+            </template>
+          </v-simple-table>
+        </v-col>
+      </v-row>
+    </v-col>
+  </v-row>
+</v-row>
+
+<v-row v-if="show">
+    <v-row>
+    <v-col>
+      <v-row>
+        <v-col>
+          <v-simple-table>
+            <template v-slot:default>
+              <thead>
+                <tr>
+                  <th class="text-left">Reviewer</th>
+                  <th class="text-left">City</th>
+                  <th class="text-left">Country</th>
+                  <th class="text-left"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="reviewer in reviewers" :key="reviewer.id">
+                  <td>{{ reviewer.email }}</td>
+                  <td>{{ reviewer.city }}</td>
+                  <td>{{ reviewer.country }}</td>
+                  <td><v-btn
+                    class="mr-4"
+                    outlined
+                     >
+                    Send file
+                </v-btn></td>
                   <td></td>
                 </tr>
               </tbody>
@@ -226,6 +275,8 @@ return {
     select: [],
     genres: [],
     books: [],
+    reviewers: [],
+    show: false,
 }
   },
   methods: {
@@ -291,6 +342,7 @@ return {
         .post("api/search", fd)
         .then(response => {
           this.books = response.data
+          this.show = false;
         })
         .catch((error) => {
           console.log(error);
@@ -301,6 +353,7 @@ return {
         .get("api/search")
         .then(response => {
           this.books = response.data
+          this.show = false;
         })
         .catch((error) => {
           console.log(error);
@@ -319,6 +372,32 @@ return {
       this.form.contentOperation = null;
       this.books = [];
       this.form.searchType = "phrase"
+      this.show = false;
+    },
+    findAvailableRevievers(email) {
+      axios
+        .get("api/search/" + email + "/writer")
+        .then(response => {
+          this.reviewers = response.data;
+          this.show = true;
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    }, download(item) {
+            let formData = new FormData();
+      formData.append("filename", item);
+        axios
+        .post("/api/helper/download", formData)
+        .then((response) => {
+          let blob = new Blob([response.data], { type: "application/pdf" });
+          let link = document.createElement("a");
+          link.href = window.URL.createObjectURL(blob);
+          link.download = item;
+          link.click();
+          console.log(response.data);
+        })
+        .catch((error) => {});
     },
   }
 }
