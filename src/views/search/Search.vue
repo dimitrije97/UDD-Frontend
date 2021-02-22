@@ -130,6 +130,25 @@
                 
                 <br>
                 <br>
+                <v-btn
+                class="mr-4"
+                @click="getAll()"
+                outlined
+                style="margin-left:2%; width:20%"
+                >
+                Get all
+                </v-btn>
+
+                <v-btn
+                class="mr-4"
+                @click="refresh()"
+                outlined
+                style="width:20%; margin-left: 6%;"
+                >
+                Refresh
+                </v-btn>
+                <br>
+                <br>
             </form>
         </v-card>
     </v-col>
@@ -183,11 +202,13 @@ return {
       genres: null,
       keywords: null,
       writer: null,
-      titleOperation: "",
-      genresOperation: "",
-      keywordsOperation: "",
-      writerOperation: "",
-      searchType: "regular"
+      content: null,
+      titleOperation: null,
+      genresOperation: null,
+      keywordsOperation: null,
+      writerOperation: null,
+      contentOperation: null,
+      searchType: "phrase"
     },
     items: [
         'AND',
@@ -198,7 +219,9 @@ return {
     items2: [
         'regular',
         'phrase',
-        'fuzzy'
+        'fuzzy',
+        'prefix',
+        'range'
     ],
     select: [],
     genres: [],
@@ -210,53 +233,92 @@ return {
       let fd = new FormData();
       if(this.form.title != null && this.form.title.trim() == ""){
         this.form.title = null;
+        this.form.titleOperation = null;
       }
       fd.append("title", this.form.title);
+
       if(this.form.keywords != null && this.form.keywords.trim() == ""){
         this.form.keywords = null;
+        this.form.keywordsOperation = null;
       }
       fd.append("keywords", this.form.keywords);
+
       if(this.form.genres != null && this.form.genres.trim() == ""){
         this.form.genres = null;
+        this.form.genresOperation = null;
       }
       fd.append("genres", this.form.genres);
+
       if(this.form.writer != null && this.form.writer.trim() == ""){
         this.form.writer = null;
+        this.form.writerOperation = null;
       }
       fd.append("writer", this.form.writer);
+
       if(this.form.content != null && this.form.content.trim() == ""){
         this.form.content = null;
+        this.form.contentOperation = null;
       }
       fd.append("content", this.form.content);
+
       if(this.form.titleOperation != null && this.form.titleOperation.trim() == ""){
         this.form.titleOperation = null;
       }
       fd.append("titleOperation", this.form.titleOperation);
-      if(this.form.title != null && this.form.keywordsOperation.trim() == ""){
+
+      if(this.form.keywordsOperation != null && this.form.keywordsOperation.trim() == ""){
         this.form.keywordsOperation = null;
       }
       fd.append("keywordsOperation", this.form.keywordsOperation);
+
       if(this.form.genresOperation != null && this.form.genresOperation.trim() == ""){
         this.form.genresOperation = null;
       }
       fd.append("genresOperation", this.form.genresOperation);
+
       if(this.form.writerOperation != null && this.form.writerOperation.trim() == ""){
         this.form.writerOperation = null;
       }
       fd.append("writerOperation", this.form.writerOperation);
+
       if(this.form.contentOperation != null && this.form.contentOperation.trim() == ""){
         this.form.contentOperation = null;
       }
       fd.append("contentOperation", this.form.contentOperation);
+      
       fd.append("searchType", this.form.searchType);
       axios
-        .post("api/search/advanced", fd)
+        .post("api/search", fd)
         .then(response => {
           this.books = response.data
         })
         .catch((error) => {
           console.log(error);
         });
+    },
+    getAll() {
+      axios
+        .get("api/search")
+        .then(response => {
+          this.books = response.data
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    refresh() {
+      this.form.title = null;
+      this.form.keywords = null;
+      this.form.writer = null;
+      this.form.genres = null;
+      this.form.content = null;
+      this.form.titleOperation = null;
+      this.form.keywordsOperation = null;
+      this.form.writerOperation = null;
+      this.form.genresOperation = null;
+      this.form.contentOperation = null;
+      this.books = [];
+      this.form.searchType = "phrase"
     },
   }
 }
